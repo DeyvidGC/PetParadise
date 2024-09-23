@@ -45,8 +45,8 @@ const Profile = ({ navigation }) => {
   }, [userData]);
 
   const onLogout = () => {
-    dispatch(clearUser());
     deleteSession();
+    dispatch(clearUser());
   };
 
   const redirectTo = (page) => {

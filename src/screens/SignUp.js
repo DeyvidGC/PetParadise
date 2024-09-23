@@ -36,8 +36,8 @@ const SignUp = ({ navigation }) => {
     try {
       //registerSchema.validateSync({ email, password, confirmPassword });
       const { data } = await triggerSignUp({ email, password });
-      //deleteSession();
-      //insertSession(data);
+      deleteSession();
+      insertSession(data);
       dispatch(
         setUser({
           email: data.email,
