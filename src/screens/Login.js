@@ -17,14 +17,17 @@ import { useDispatch } from "react-redux";
 import { setUser } from "../features/auth/authSlice";
 import { deleteSession, insertSession } from "../db";
 import { loginSchema } from "../validations/loginSchema";
+import ModalMessage from "../components/ModalMessage";
+import { useModalMessage } from "../hooks/useModalMessage";
 
 const Login = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorEmail, setErrorEmail] = useState("");
   const [errorPassword, setErrorPassword] = useState("");
-  const [triggerLogin, { data, isSuccess, isError, error }] =
+  const [triggerLogin, { data, isSuccess, isError }] =
     useLoginMutation();
+  const { modalVisible, modalConfig, showModal, hideModal } = useModalMessage();
   const dispatch = useDispatch();
 
   const validateField = async (field, value) => {
@@ -37,6 +40,26 @@ const Login = ({ navigation }) => {
       if (field === "password") setErrorPassword(err.message);
     }
   };
+
+  const handleErrorLoginAlert = (title, message) => {
+    showModal({
+      type: "error",
+      title,
+      message,
+      confirmActionText: "Cerrar",
+      onConfirmAction: hideModal,
+      onDismiss: hideModal,
+    });
+  };
+
+  useEffect(() => {
+    if (isError) {
+      handleErrorLoginAlert(
+        "Ups! Ocurrió un error",
+        "El usuario o la contraseña son incorrectos"
+      );
+    }
+  }, [isError]);
 
   const onSubmit = async () => {
     try {
@@ -76,54 +99,57 @@ const Login = ({ navigation }) => {
   };
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.scrollContainer}
-      showsVerticalScrollIndicator={false}
-    >
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={colors.background}
-      ></StatusBar>
-      <View style={styles.headerContainer}>
-        <Text style={styles.textHeader1}>Login</Text>
-      </View>
-      <View style={styles.formContainer}>
-        <View style={styles.inputsContainer}>
-          <Input
-            placeholder="Email"
-            value={email}
-            onChangeText={(text) => {
-              setEmail(text);
-              validateField("email", text);
-            }}
-            errors={errorEmail ? [errorEmail] : []}
-          >
-            <FontAwesome name="envelope" size={22} color="#676767" />
-          </Input>
-          <InputPassword
-            value={password}
-            onChangeText={(text) => {
-              setPassword(text);
-              validateField("password", text);
-            }}
-            errors={errorPassword ? [errorPassword] : []}
-          ></InputPassword>
+    <>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor={colors.background}
+        ></StatusBar>
+        <View style={styles.headerContainer}>
+          <Text style={styles.textHeader1}>Login</Text>
         </View>
-        <ButtonFlatOpacity
-          text="Iniciar sesión"
-          onPress={onSubmit}
-        ></ButtonFlatOpacity>
-      </View>
+        <View style={styles.formContainer}>
+          <View style={styles.inputsContainer}>
+            <Input
+              placeholder="Email"
+              value={email}
+              onChangeText={(text) => {
+                setEmail(text);
+                validateField("email", text);
+              }}
+              errors={errorEmail ? [errorEmail] : []}
+            >
+              <FontAwesome name="envelope" size={22} color="#676767" />
+            </Input>
+            <InputPassword
+              value={password}
+              onChangeText={(text) => {
+                setPassword(text);
+                validateField("password", text);
+              }}
+              errors={errorPassword ? [errorPassword] : []}
+            ></InputPassword>
+          </View>
+          <ButtonFlatOpacity
+            text="Iniciar sesión"
+            onPress={onSubmit}
+          ></ButtonFlatOpacity>
+        </View>
 
-      <View style={styles.toSignUpContainer}>
-        <Text style={styles.textParagraph}>¿Aún no tienes una cuenta?</Text>
-        <TouchableOpacity activeOpacity={0.9} onPress={redirectTo}>
-          <Text style={[styles.textParagraph, styles.textLink]}>
-            Regístrate
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+        <View style={styles.toSignUpContainer}>
+          <Text style={styles.textParagraph}>¿Aún no tienes una cuenta?</Text>
+          <TouchableOpacity activeOpacity={0.9} onPress={redirectTo}>
+            <Text style={[styles.textParagraph, styles.textLink]}>
+              Regístrate
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+      <ModalMessage visible={modalVisible} {...modalConfig}></ModalMessage>
+    </>
   );
 };
 
