@@ -13,7 +13,7 @@ const Cart = ({ navigation }) => {
   const cart = useSelector((state) => state.cart);
   const user = useSelector((state) => state.auth);
   const localId = useSelector((state) => state.auth.localId);
-  const [triggerPostOrder, isSuccess, isError] = usePostOrderMutation();
+  const [triggerPostOrder, { isSuccess, isError }] = usePostOrderMutation();
   const { modalVisible, modalConfig, showModal, hideModal } = useModalMessage();
   const dispatch = useDispatch();
 
@@ -59,7 +59,7 @@ const Cart = ({ navigation }) => {
           hideModal
         );
       }
-    }else{
+    } else {
       handleShowAlert(
         "warning",
         "El carrito está vacío",

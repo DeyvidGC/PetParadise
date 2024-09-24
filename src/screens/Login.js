@@ -19,13 +19,14 @@ import { deleteSession, insertSession } from "../db";
 import { loginSchema } from "../validations/loginSchema";
 import ModalMessage from "../components/ModalMessage";
 import { useModalMessage } from "../hooks/useModalMessage";
+import { setLoading } from "../features/loading/loadingSlice";
 
 const Login = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorEmail, setErrorEmail] = useState("");
   const [errorPassword, setErrorPassword] = useState("");
-  const [triggerLogin, { data, isSuccess, isError }] =
+  const [triggerLogin, { data, isLoading, isSuccess, isError }] =
     useLoginMutation();
   const { modalVisible, modalConfig, showModal, hideModal } = useModalMessage();
   const dispatch = useDispatch();
@@ -60,6 +61,11 @@ const Login = ({ navigation }) => {
       );
     }
   }, [isError]);
+
+  useEffect(() => {
+    if (isLoading) dispatch(setLoading(true));
+    else dispatch(setLoading(false));
+  }, [isLoading]);
 
   const onSubmit = async () => {
     try {

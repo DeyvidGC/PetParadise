@@ -6,6 +6,7 @@ import { Provider } from "react-redux";
 import { store } from "./src/app/store";
 import { PaperProvider } from "react-native-paper";
 import { init } from "./src/db";
+import Loading from "./src/components/Loading";
 
 export default function App() {
   const [fontLoaded] = useFonts(fonts);
@@ -19,6 +20,7 @@ export default function App() {
     <Provider store={store}>
       <PaperProvider>
         <Navigator />
+        <Loading></Loading>
       </PaperProvider>
     </Provider>
   );
