@@ -16,25 +16,31 @@ import { useLoginMutation } from "../services/auth";
 import { useDispatch } from "react-redux";
 import { setUser } from "../features/auth/authSlice";
 import { deleteSession, insertSession } from "../db";
+import { loginSchema } from "../validations/loginSchema";
 
 const Login = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errorUsername, setErrorUsername] = useState("");
   const [errorEmail, setErrorEmail] = useState("");
   const [errorPassword, setErrorPassword] = useState("");
-  const [triggerLogin, { data, isSuccess, isError, error }] = useLoginMutation();
+  const [triggerLogin, { data, isSuccess, isError, error }] =
+    useLoginMutation();
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    if (isError) {
-      setErrorEmail("email existente");
+  const validateField = async (field, value) => {
+    try {
+      await loginSchema.validateAt(field, { [field]: value });
+      if (field === "email") setErrorEmail("");
+      if (field === "password") setErrorPassword("");
+    } catch (err) {
+      if (field === "email") setErrorEmail(err.message);
+      if (field === "password") setErrorPassword(err.message);
     }
-  }, [isError]);
+  };
 
   const onSubmit = async () => {
     try {
-      //registerSchema.validateSync({ email, password, confirmPassword });
+      loginSchema.validateSync({ email, password }, { abortEarly: false });
       const { data } = await triggerLogin({ email, password });
       deleteSession();
       insertSession(data);
@@ -47,18 +53,20 @@ const Login = ({ navigation }) => {
       );
 
       navigation.navigate("Main", {
-        screen: "Home"
+        screen: "Home",
       });
     } catch (error) {
-      switch (error.path) {
-        case "email":
-          setErrorEmail(error.message);
-          setErrorPassword("");
-          break;
-        case "password":
-          setErrorEmail("");
-          setErrorPassword(error.message);
-          break;
+      if (error.inner) {
+        error.inner.forEach((err) => {
+          switch (err.path) {
+            case "email":
+              setErrorEmail(err.message);
+              break;
+            case "password":
+              setErrorPassword(err.message);
+              break;
+          }
+        });
       }
     }
   };
@@ -81,12 +89,30 @@ const Login = ({ navigation }) => {
       </View>
       <View style={styles.formContainer}>
         <View style={styles.inputsContainer}>
-          <Input placeholder="Email" value={email} onChangeText={(text) => setEmail(text)}>
+          <Input
+            placeholder="Email"
+            value={email}
+            onChangeText={(text) => {
+              setEmail(text);
+              validateField("email", text);
+            }}
+            errors={errorEmail ? [errorEmail] : []}
+          >
             <FontAwesome name="envelope" size={22} color="#676767" />
           </Input>
-          <InputPassword value={password} onChangeText={(text) => setPassword(text)}></InputPassword>
+          <InputPassword
+            value={password}
+            onChangeText={(text) => {
+              setPassword(text);
+              validateField("password", text);
+            }}
+            errors={errorPassword ? [errorPassword] : []}
+          ></InputPassword>
         </View>
-        <ButtonFlatOpacity text="Iniciar sesión" onPress={onSubmit}></ButtonFlatOpacity>
+        <ButtonFlatOpacity
+          text="Iniciar sesión"
+          onPress={onSubmit}
+        ></ButtonFlatOpacity>
       </View>
 
       <View style={styles.toSignUpContainer}>
